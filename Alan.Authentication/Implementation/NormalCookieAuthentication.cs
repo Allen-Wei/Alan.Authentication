@@ -25,7 +25,7 @@ namespace Alan.Authentication.Implementation
         {
             get
             {
-                var keyValue = ConfigurationSettings.AppSettings["Authentication-AESKey"] ?? "0a2666796b5a4127";
+                var keyValue = ConfigurationSettings.AppSettings["Authentication-AESKey"] ?? "0a2667792b5a9027";
                 return Encoding.UTF8.GetBytes(keyValue);
             }
         }
