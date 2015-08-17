@@ -1,0 +1,22 @@
+﻿@model Alan.Authentication.Core.AuthTicket<Alan.Authentication.Demo.Models.Person>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Current</title>
+</head>
+<body>
+    <div>Current Authentication Name: @Alan.Authentication.AuthUtils.Current.GetType().FullName</div>
+    <div>Is Authentication: @this.User.Identity.IsAuthenticated </div>
+    <div>Is In Role "dev": @this.User.IsInRole("dev")</div>
+    <div>User Id: @this.User.Identity.Name</div>
+    <div>User Roles: @String.Join(" ", Model.Roles ?? new string[] { })</div>
+    <div>User Data: @Alan.Authentication.Utils.SerializeUtils.ToJson(Model.Data)</div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>SignIn</title>
+</head>
+<body>
+    <form action="/Home/SignIn" method="post">
+        <div>
+            <label>
+                User Id: <input type="text" name="userId" />
+            </label>
+        </div>
+        <div>
+            <label>
+                User Roles: <input type="text" name="roles" />
+            </label>
+        </div>
+        <div>
+            <label>
+                User Data - First Name: <input type="text" name="firstName" />
+            </label>
+        </div>
+        <div>
+            <label>
+                User Data - Last Name: <input type="text" name="lastName" />
+            </label>
+        </div>
+        <div>
+            <input type="submit" value="Submit" />
+        </div>
+    </form>
+</body>
+</html>
