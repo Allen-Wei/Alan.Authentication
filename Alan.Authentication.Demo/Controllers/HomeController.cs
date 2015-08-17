@@ -31,8 +31,8 @@ namespace Alan.Authentication.Demo.Controllers
         {
             var uid = Request["userid"];
             var roles = (Request["roles"] ?? "").Split(' ');
-            AuthUtils.Current.SignIn(System.Web.HttpContext.Current.Response,
-                uid,
+            Alan.Authentication.AuthUtils.Current.SignIn(System.Web.HttpContext.Current.Response,
+                "",
                 7,
                 roles,
                 p);
