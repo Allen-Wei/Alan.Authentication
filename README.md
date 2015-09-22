@@ -1,6 +1,8 @@
 # Alan.Authentication
 Alan Authentication Module
 
+### 这个项目的老版本已移至 [Alan.Authentication.Old](https://github.com/Allen-Wei/Alan.Authentication.Old), 当前这个项目是不依赖于 `HttpContext.Current` 对象的版本, 以适应跨平台.
+
 nuget.org address: https://www.nuget.org/packages/Alan.Authentication/
 
 ## Step 1 Install
