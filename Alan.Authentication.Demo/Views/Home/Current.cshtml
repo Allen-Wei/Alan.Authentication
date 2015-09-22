@@ -1,7 +1,15 @@
-﻿@model Alan.Authentication.Core.AuthTicket<Alan.Authentication.Demo.Models.Person>
+﻿@using System
+@model Alan.Authentication.Core.AuthTicket<Alan.Authentication.Demo.Models.Person>
 
 @{
     Layout = null;
+
+    //System.Web.HttpContext.Current.Request
+
+    var uid = Alan.Authentication.AuthUtils.Current.GetUid(name =>
+    {
+        return Request.Cookies[name].Value;
+    });
 }
 
 <!DOCTYPE html>

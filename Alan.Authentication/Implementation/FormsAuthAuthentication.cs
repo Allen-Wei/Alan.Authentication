@@ -19,11 +19,9 @@ namespace Alan.Authentication.Implementation
         /// 获取认证Cookie值
         /// </summary>
         /// <returns></returns>
-        public AuthTicket<T> GetTicket<T>(HttpRequest request)
+        public AuthTicket<T> GetTicket<T>(Func<string, string> getHeader)
         {
-            var cookie = request.Cookies[FormsAuthentication.FormsCookieName];
-            if (cookie == null) return null;
-            var cookieValue = cookie.Value;
+            var cookieValue = getHeader(FormsAuthentication.FormsCookieName);
             if (String.IsNullOrWhiteSpace(cookieValue)) return null;
             var ticket = FormsAuthentication.Decrypt(cookieValue);
             if (ticket == null || ticket.Expired) return null;
@@ -33,45 +31,67 @@ namespace Alan.Authentication.Implementation
             return authTicket;
         }
 
-
         /// <summary>
         /// 获取登录时设置的票据
         /// </summary>
-        /// <param name="response">Http响应</param>
         /// <param name="uid">用户标识</param>
         /// <param name="days">有效时间</param>
+        /// <param name="roles">用户所属的角色</param>
         /// <param name="data">用户附加数据</param>
         /// <returns>认证票据</returns>
-        public Tuple<string, string> SignIn(HttpResponse response, string uid, int days, string[] roles, object data)
+        public Dictionary<string, string> SignIn(string uid, int days, string[] roles, object data)
         {
             //实际上在这里 AuthTicket.UserId 和 FormsAuthenticationTicket里的 uid 冗余了
             //不过两者最好保持一致
-            var dataJson = AuthTicket<object>.Create(uid, roles, data).ToJson();
+            var expire = DateTime.Now.AddDays(days);
+            var dataJson = AuthTicket<object>.Create(uid, roles, data, expire).ToJson();
 
             var ticket = new FormsAuthenticationTicket(2, uid, DateTime.Now, DateTime.Now.AddDays(days), true, dataJson);
             var cookieValue = FormsAuthentication.Encrypt(ticket);
 
             var cookieName = FormsAuthentication.FormsCookieName ?? typeof(FormsAuthAuthentication).Name;
-            var cookie = new HttpCookie(cookieName)
+            var cookiePath = FormsAuthentication.FormsCookiePath ?? "/";
+
+            var setCookieValue = String.Format("{0}={1}; Path={2}; Domain={3}; HttpOnly",
+                cookieName,
+                cookieValue,
+                cookiePath,
+                FormsAuthentication.CookieDomain);
+            var headers = new Dictionary<string, string>()
             {
-                Path = "/",
-                Domain = FormsAuthentication.CookieDomain,
-                HttpOnly = true,
-                Value = cookieValue
+                { "Set-Cookie", setCookieValue}
             };
 
-            response.SetCookie(cookie);
-            return Tuple.Create("Set-Cookie", cookie.Value);
+
+            return headers;
+        }
+
+        /// <summary>
+        /// 登录
+        /// </summary>
+        /// <param name="response">Http响应</param>
+        /// <param name="uid">用户标识</param>
+        /// <param name="days">有效时间</param>
+        /// <param name="roles">用户所拥有的角色</param>
+        /// <param name="data">用户附加数据</param>
+        /// <returns>认证票据</returns>
+        public void SignIn(HttpResponse response, string uid, int days, string[] roles, object data)
+        {
+            var headers = this.SignIn(uid, days, roles, data);
+            foreach (var header in headers)
+            {
+                response.AddHeader(header.Key, header.Value);
+            }
         }
 
         /// <summary>
         /// 获取用户标识
         /// </summary>
-        /// <param name="request">Http请求</param>
+        /// <param name="getHeader">获取Header值</param>
         /// <returns>用户标识</returns>
-        public string GetUid(HttpRequest request)
+        public string GetUid(Func<string, string> getHeader)
         {
-            var ticket = this.GetTicket<object>(request);
+            var ticket = this.GetTicket<object>(getHeader);
             if (ticket == null) return null;
             return ticket.UserId;
         }
@@ -80,12 +100,12 @@ namespace Alan.Authentication.Implementation
         /// 获取用户附加数据
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="request"></param>
+        /// <param name="getHeader">获取Header值</param>
         /// <returns></returns>
-        public T GetUserData<T>(HttpRequest request)
+        public T GetUserData<T>(Func<string, string> getHeader)
             where T : class
         {
-            var ticket = this.GetTicket<T>(request);
+            var ticket = this.GetTicket<T>(getHeader);
             if (ticket == null) return null;
             return ticket.Data;
 
@@ -103,9 +123,9 @@ namespace Alan.Authentication.Implementation
         /// <summary>
         /// 用户是否已认证
         /// </summary>
-        /// <param name="request">Http请求</param>
+        /// <param name="getHeader">获取Header值</param>
         /// <returns>是否已认证</returns>
-        public bool IsAuthenticated(HttpRequest request)
+        public bool IsAuthenticated(Func<string, string> getHeader)
         {
             return HttpContext.Current.User.Identity.IsAuthenticated;
         }
@@ -114,12 +134,12 @@ namespace Alan.Authentication.Implementation
         /// 用户是否拥有某个角色
         /// 根据具体需求可以不实现这个方法
         /// </summary>
-        /// <param name="request">HttpRequest</param>
+        /// <param name="getHeader">获取Header值</param>
         /// <param name="roleName">角色名称</param>
         /// <returns>返回是否拥有某个角色</returns>
-        public bool IsInRole(HttpRequest request, string roleName)
+        public bool IsInRole(Func<string, string> getHeader, string roleName)
         {
-            var ticket = this.GetTicket<object>(request);
+            var ticket = this.GetTicket<object>(getHeader);
             if (ticket == null) return false;
             var roles = ticket.Roles;
             if (roles == null || roles.Length == 0) return false;

@@ -26,13 +26,26 @@ namespace Alan.Authentication.Core
         /// </summary>
         public T Data { get; set; }
 
-        public static AuthTicket<T> Create(string uid, string[] roles, T data)
+        /// <summary>
+        /// 过期时间
+        /// </summary>
+        public DateTime Expire { get; set; }
+
+        /// <summary>
+        /// 辅助方法
+        /// </summary>
+        /// <param name="uid">用户标识</param>
+        /// <param name="roles">用户角色</param>
+        /// <param name="data">用户附加数据</param>
+        /// <returns>认证票据</returns>
+        public static AuthTicket<T> Create(string uid, string[] roles, T data, DateTime expire)
         {
             return new AuthTicket<T>()
             {
                 UserId = uid,
                 Roles = roles,
-                Data = data
+                Data = data,
+                Expire = expire
             };
         }
     }

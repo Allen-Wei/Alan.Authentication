@@ -22,7 +22,7 @@ namespace Alan.Authentication.Modules
         /// <param name="req"></param>
         public AuthPrincipal(HttpRequest req)
         {
-            var uid = AuthUtils.Current.GetUid(req);
+            var uid = AuthUtils.Current.GetUid(name => req.Headers.Get(name));
             this._uid = uid;
         }
 
@@ -34,9 +34,7 @@ namespace Alan.Authentication.Modules
         /// <returns></returns>
         public bool IsInRole(string role)
         {
-            return AuthUtils.Current.IsInRole(HttpContext.Current.Request, role);
-
-
+            return AuthUtils.Current.IsInRole(name => HttpContext.Current.Request.Headers.Get(name), role);
         }
 
         public IIdentity Identity

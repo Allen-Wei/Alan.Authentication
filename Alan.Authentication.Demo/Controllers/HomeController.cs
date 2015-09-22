@@ -36,7 +36,7 @@ namespace Alan.Authentication.Demo.Controllers
                 7,
                 roles,
                 p);
-            return View();
+            return View(p);
         }
 
         /// <summary>
@@ -45,7 +45,12 @@ namespace Alan.Authentication.Demo.Controllers
         /// <returns></returns>
         public ActionResult Current()
         {
-            var ticket = AuthUtils.Current.GetTicket<Person>(System.Web.HttpContext.Current.Request) ?? new Core.AuthTicket<Person>();
+            var ticket = AuthUtils.Current.GetTicket<Person>(name =>
+            {
+                var cookie = System.Web.HttpContext.Current.Request.Cookies[name] ?? new HttpCookie("");
+                return cookie.Value;
+
+            }) ?? new Core.AuthTicket<Person>();
             return View(ticket);
         }
 
@@ -73,7 +78,7 @@ namespace Alan.Authentication.Demo.Controllers
         /// 必须拥有角色dev的认证用户才能访问
         /// </summary>
         /// <returns></returns>
-        [Authorize(Roles ="dev")]
+        [Authorize(Roles = "dev")]
         public ActionResult MustSpecialRole()
         {
             return View();
